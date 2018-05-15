@@ -1,0 +1,10 @@
+--- a/configure	2018-05-15 05:27:34.045436294 +0800
++++ b/configure	2018-05-15 05:29:48.577398048 +0800
+@@ -20077,6 +20077,7 @@
+ 
+ 
+     wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
++    wayland_scanner=${WAYLAND_SCANNER_UTIL}
+     ac_wayland_protocols_pkgdatadir=`$PKG_CONFIG --variable=pkgdatadir wayland-protocols`
+     WAYLAND_PROTOCOLS_DATADIR=$ac_wayland_protocols_pkgdatadir
+ 
