@@ -47,8 +47,8 @@ def MAIN_ENV(args):
     ops.exportEnv(ops.setEnv("CXX", ops.getEnv("CROSS_COMPILE") + "g++"))
     ops.exportEnv(ops.setEnv("CROSS", ops.getEnv("CROSS_COMPILE")))
     ops.exportEnv(ops.setEnv("DESTDIR", install_tmp_dir))
-    ops.exportEnv(ops.setEnv("PKG_CONFIG_LIBDIR", ops.path_join(iopc.getSdkPath(), "pkgconfig")))
-    ops.exportEnv(ops.setEnv("PKG_CONFIG_SYSROOT_DIR", iopc.getSdkPath()))
+    #ops.exportEnv(ops.setEnv("PKG_CONFIG_LIBDIR", ops.path_join(iopc.getSdkPath(), "pkgconfig")))
+    #ops.exportEnv(ops.setEnv("PKG_CONFIG_SYSROOT_DIR", iopc.getSdkPath()))
 
     cc_sysroot = ops.getEnv("CC_SYSROOT")
     cflags = ""
@@ -62,9 +62,9 @@ def MAIN_ENV(args):
 
     libs = ""
     libs += " -lffi -lxml2 -lexpat -lwayland-client"
-    ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
-    ops.exportEnv(ops.setEnv("CFLAGS", cflags))
-    ops.exportEnv(ops.setEnv("LIBS", libs))
+    #ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
+    #ops.exportEnv(ops.setEnv("CFLAGS", cflags))
+    #ops.exportEnv(ops.setEnv("LIBS", libs))
 
     return False
 
@@ -95,8 +95,13 @@ def MAIN_CONFIGURE(args):
     extra_conf.append("--disable-x11")
     extra_conf.append("--enable-wayland")
     extra_conf.append("--with-x-locale-root=/usr/local/share/X11/locale")
-    extra_conf.append('WAYLAND_CFLAGS="-I ' + ops.path_join(iopc.getSdkPath(), 'usr/include/wayland') + '"')
-    extra_conf.append('WAYLAND_LIBS="-L ' + ops.path_join(iopc.getSdkPath(), 'lib') + ' -lwayland-client"')
+    cflags = ""
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/wayland')
+    libs = ""
+    libs += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
+    libs += " -lffi -lxml2 -lexpat -lwayland-client"
+    extra_conf.append('WAYLAND_CFLAGS=' + cflags)
+    extra_conf.append('WAYLAND_LIBS=' + libs)
     iopc.configure(tarball_dir, extra_conf)
 
     return True
