@@ -50,18 +50,6 @@ def MAIN_ENV(args):
     #ops.exportEnv(ops.setEnv("PKG_CONFIG_LIBDIR", ops.path_join(iopc.getSdkPath(), "pkgconfig")))
     #ops.exportEnv(ops.setEnv("PKG_CONFIG_SYSROOT_DIR", iopc.getSdkPath()))
 
-    cc_sysroot = ops.getEnv("CC_SYSROOT")
-    cflags = ""
-    cflags += " -I" + ops.path_join(cc_sysroot, 'usr/include')
-    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/wayland')
-
-    ldflags = ""
-    ldflags += " -L" + ops.path_join(cc_sysroot, 'lib')
-    ldflags += " -L" + ops.path_join(cc_sysroot, 'usr/lib')
-    ldflags += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
-
-    libs = ""
-    libs += " -lffi -lxml2 -lexpat -lwayland-client"
     #ops.exportEnv(ops.setEnv("LDFLAGS", ldflags))
     #ops.exportEnv(ops.setEnv("CFLAGS", cflags))
     #ops.exportEnv(ops.setEnv("LIBS", libs))
@@ -89,17 +77,15 @@ def MAIN_PATCH(args, patch_group_name):
 def MAIN_CONFIGURE(args):
     set_global(args)
 
+    extra_conf.append("--extra-cflags=" + cflags)
+    extra_conf.append("--extra-ldflags=" + libs)
+
     extra_conf = []
     extra_conf.append("--host=" + cc_host)
     extra_conf.append("--disable-docs")
     extra_conf.append("--disable-x11")
     extra_conf.append("--enable-wayland")
     extra_conf.append("--with-x-locale-root=/usr/local/share/X11/locale")
-    cflags = ""
-    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/wayland')
-    libs = ""
-    libs += " -L" + ops.path_join(iopc.getSdkPath(), 'lib')
-    libs += " -lffi -lxml2 -lexpat -lwayland-client"
     extra_conf.append('WAYLAND_CFLAGS=' + cflags)
     extra_conf.append('WAYLAND_LIBS=' + libs)
     iopc.configure(tarball_dir, extra_conf)
@@ -176,6 +162,19 @@ def MAIN_INSTALL(args):
     iopc.installBin(args["pkg_name"], ops.path_join(dst_lib_dir, "."), "lib")
     iopc.installBin(args["pkg_name"], ops.path_join(dst_usr_local_share_dir, "."), "usr/local/share")
     iopc.installBin(args["pkg_name"], ops.path_join(tmp_include_dir, "."), dst_include_dir)
+
+    return False
+
+def MAIN_SDKENV(args):
+    set_global(args)
+
+    cflags = ""
+    cflags += " -I" + ops.path_join(iopc.getSdkPath(), 'usr/include/' + args["pkg_name"])
+    iopc.add_includes(cflags)
+
+    libs = ""
+    libs += " -lxkbcommon"
+    iopc.add_libs(libs)
 
     return False
 
