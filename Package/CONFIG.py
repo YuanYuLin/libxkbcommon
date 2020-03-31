@@ -27,6 +27,7 @@ def set_global(args):
     global dst_include_dir
     global dst_lib_dir
     global dst_usr_local_share_dir
+    global selected_wayland
     pkg_path = args["pkg_path"]
     output_dir = args["output_path"]
     tarball_pkg = ops.path_join(pkg_path, TARBALL_FILE)
@@ -39,6 +40,7 @@ def set_global(args):
     dst_include_dir = ops.path_join("include",args["pkg_name"])
     dst_lib_dir = ops.path_join(install_dir, "lib")
     dst_usr_local_share_dir = ops.path_join(install_dir, "usr/local/share")
+    selected_wayland = False
 
 def MAIN_ENV(args):
     set_global(args)
@@ -77,17 +79,20 @@ def MAIN_PATCH(args, patch_group_name):
 def MAIN_CONFIGURE(args):
     set_global(args)
 
-    extra_conf.append("--extra-cflags=" + cflags)
-    extra_conf.append("--extra-ldflags=" + libs)
+    #extra_conf.append("--extra-cflags=" + cflags)
+    #extra_conf.append("--extra-ldflags=" + libs)
 
     extra_conf = []
     extra_conf.append("--host=" + cc_host)
     extra_conf.append("--disable-docs")
     extra_conf.append("--disable-x11")
-    extra_conf.append("--enable-wayland")
-    extra_conf.append("--with-x-locale-root=/usr/local/share/X11/locale")
-    extra_conf.append('WAYLAND_CFLAGS=' + cflags)
-    extra_conf.append('WAYLAND_LIBS=' + libs)
+    if selected_wayland :
+        extra_conf.append("--enable-wayland")
+    else:
+        extra_conf.append("--disable-wayland")
+    #extra_conf.append("--with-x-locale-root=/usr/local/share/X11/locale")
+    #extra_conf.append('WAYLAND_CFLAGS=' + cflags)
+    #extra_conf.append('WAYLAND_LIBS=' + libs)
     iopc.configure(tarball_dir, extra_conf)
 
     return True
@@ -102,11 +107,13 @@ def MAIN_BUILD(args):
 
     ops.mkdir(install_dir)
     ops.mkdir(dst_lib_dir)
-    libxkbcommon = "libxkbcommon.so.0.0.0"
-    ops.copyto(ops.path_join(install_tmp_dir, "usr/local/lib/" + libxkbcommon), dst_lib_dir)
-    ops.ln(dst_lib_dir, libxkbcommon, "libxkbcommon.so.0.0")
-    ops.ln(dst_lib_dir, libxkbcommon, "libxkbcommon.so.0")
-    ops.ln(dst_lib_dir, libxkbcommon, "libxkbcommon.so")
+
+    src_lib_dir = ops.path_join(install_tmp_dir, "usr/local/lib/")
+    lib_so = "libxkbcommon.so.0.0.0"
+    ops.copyto(ops.path_join(src_lib_dir, lib_so), dst_lib_dir)
+    ops.ln(dst_lib_dir, lib_so, "libxkbcommon.so.0.0")
+    ops.ln(dst_lib_dir, lib_so, "libxkbcommon.so.0")
+    ops.ln(dst_lib_dir, lib_so, "libxkbcommon.so")
 
     rules_dir = ops.path_join(dst_usr_local_share_dir, "X11/xkb/rules")
     ops.mkdir(rules_dir)
@@ -176,6 +183,9 @@ def MAIN_SDKENV(args):
     libs += " -lxkbcommon"
     iopc.add_libs(libs)
 
+    return False
+
+def MAIN_DEPS(args):
     return False
 
 def MAIN_CLEAN_BUILD(args):
